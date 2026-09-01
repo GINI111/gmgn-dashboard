@@ -79,6 +79,11 @@ canvas{width:100%;height:90px;display:block;margin-top:6px}
 .x:hover{color:var(--red)}
 #evList{max-height:420px;overflow-y:auto}
 #status{color:var(--dim);font-size:10px}
+<style>
+@keyframes flUp{0%{background:rgba(0,200,150,.45)}100%{background:transparent}}
+@keyframes flDn{0%{background:rgba(255,68,102,.45)}100%{background:transparent}}
+.fl-up{animation:flUp 1.2s ease-out}
+.fl-dn{animation:flDn 1.2s ease-out}
 </style>
 </head>
 <body>
@@ -181,8 +186,18 @@ function sortKey(t,k){
   return t[k]??-Infinity;
 }
 const EV_SHORT={NEW:'🆕',BREAKOUT:'🔥',BREAKOUT_STRONG:'🔥',MOMENTUM:'📈',RETEST:'🔄',DECAY:'📉',early:'🌱',smart:'🧠',highrisk:'⚠️'};
+const _FIELDS={mc:0,p1h:1,sm:2,hd:3,sc:4};
+function chg(k,t){
+  const p=_prev[t.c+':'+t.a];if(!p)return '';
+  const i=_FIELDS[k];if(p[i]===undefined)return '';
+  const v=[t.mc,t.p1h,t.sm,t.hd,t.sc][i];
+  return v>p[i]?'fl-up':v<p[i]?'fl-dn':'';
+}
+let _prev={}; // 上一轮数据快照（高亮变化用）
 function render(){
   if(!D)return;
+  const snapNow={};D.tokens.slice(0,200).forEach(t=>snapNow[t.c+':'+t.a]=[t.mc,t.p1h,t.sm,t.hd,t.sc]);
+  const prev=_prev;_prev=snapNow;
   const q=($('q').value||'').toLowerCase();
   let list=D.tokens.filter(t=>{
     if(FC!=='all'&&t.c!==FC)return false;
@@ -211,11 +226,11 @@ function render(){
       <td><b class="${t.sc>=80?'up':t.sc>=65?'':'down'}">${t.sc??'-'}</b></td>
       <td><span class="er ${er}">${ER_CN[er]} ${t.er??''}</span></td>
       <td style="color:var(--cyn);max-width:90px;overflow:hidden;text-overflow:ellipsis">${t.narr||'-'}</td>
-      <td>${mcFmt(t.mc)}</td>
-      <td class="${p1h>=0?'up':'down'}">${p1h!=null?(p1h>=0?'+':'')+p1h.toFixed(1)+'%':'-'}</td>
+      <td class="${chg('mc',t)}">${mcFmt(t.mc)}</td>
+      <td class="${chg('p1h',t)} ${p1h>=0?'up':'down'}">${p1h!=null?(p1h>=0?'+':'')+p1h.toFixed(1)+'%':'-'}</td>
       <td>${mcFmt(t.v1h)}</td>
-      <td><b style="color:${t.sm>=100?'var(--grn)':'inherit'}">${t.sm??0}</b></td>
-      <td>${t.hd??0}</td>
+      <td><b class="${chg('sm',t)}" style="color:${t.sm>=100?'var(--grn)':'inherit'}">${t.sm??0}</b></td>
+      <td class="${chg('hd',t)}">${t.hd??0}</td>
       <td style="color:var(--dim)">${t.age>86400?(t.age/3600).toFixed(0)+'小时前':(t.age/60).toFixed(0)+'分前'}</td>
       <td style="color:var(--dim)">${ageFmt(t.ct)}</td>
     </tr>`;
@@ -313,14 +328,14 @@ async function load(){
     const r=await fetch(DATA_URL+'?t='+Date.now());
     D=await r.json();
     const ageMin = Math.max(0, Math.round((Date.now()/1000 - D.generated_at)/60));
-    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每60秒自动刷新 · ${D.build_ms?`构建${D.build_ms}ms `:''}· 📈列点击打开GMGN图表`;
+    $('sub').textContent=`⚡ 实时 ${ageMin===0?'<1':ageMin}分钟前 · 每10秒刷新 · ${D.build_ms?`构建${D.build_ms}ms `:''}· 数值变化会闪动 · 📈列打开GMGN图表`;
     stats();render();renderEv();initFilters();
     $('status').textContent='✅ 已更新';
   }catch(e){$('status').textContent='❌ 加载失败: '+e.message}
 }
 initFilters();
 load();
-setInterval(load, 60*1000);
+setInterval(load, 10*1000);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
 </script>
 </body>
