@@ -118,7 +118,7 @@ canvas{width:100%;height:90px;display:block;margin-top:6px}
 </div>
 
 <script>
-const DATA_URL='data/gmgn_dashboard.json';
+const DATA_URL=(location.hostname.indexOf('github.io')>=0)?'https://gini111.github.io/gmgn-dashboard/data/gmgn_dashboard.json':'/data';
 let D=null, SORT={k:'sc',d:-1}, FC='all', FS='all', FE='all', FP='all';
 const CHAINS=['all','sol','bsc','base','eth','robinhood','arc','stable'];
 const STAGES=['all','NEW','ACCUMULATION','TRENDING','BREAKOUT','RETEST','EXTENDED','DECAY','WATCH'];
@@ -313,7 +313,7 @@ async function load(){
     const r=await fetch(DATA_URL+'?t='+Date.now());
     D=await r.json();
     const ageMin = Math.max(0, Math.round((Date.now()/1000 - D.generated_at)/60));
-    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每60秒自动刷新 · 📈列点击打开GMGN图表`;
+    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每60秒自动刷新 · ${D.build_ms?`构建${D.build_ms}ms `:''}· 📈列点击打开GMGN图表`;
     stats();render();renderEv();initFilters();
     $('status').textContent='✅ 已更新';
   }catch(e){$('status').textContent='❌ 加载失败: '+e.message}
