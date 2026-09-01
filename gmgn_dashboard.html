@@ -293,14 +293,15 @@ async function load(){
   try{
     const r=await fetch(DATA_URL+'?t='+Date.now());
     D=await r.json();
-    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · 每15分钟自动更新`;
+    const ageMin = Math.max(0, Math.round((Date.now()/1000 - D.generated_at)/60));
+    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每5分钟自动同步`;
     stats();render();renderEv();initFilters();
     $('status').textContent='✅ 已更新';
   }catch(e){$('status').textContent='❌ 加载失败: '+e.message}
 }
 initFilters();
 load();
-setInterval(load, 15*60*1000);
+setInterval(load, 5*60*1000);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
 </script>
 </body>
