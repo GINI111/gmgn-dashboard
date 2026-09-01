@@ -118,7 +118,7 @@ canvas{width:100%;height:90px;display:block;margin-top:6px}
 </div>
 
 <script>
-const DATA_URL=(location.hostname.indexOf('github.io')>=0)?'https://gini111.github.io/gmgn-dashboard/data/gmgn_dashboard.json':'/data';
+const DATA_URL=location.hostname.endsWith('github.io')?'https://gini111.github.io/gmgn-dashboard/data/gmgn_dashboard.json':'/data';
 let D=null, SORT={k:'sc',d:-1}, FC='all', FS='all', FE='all', FP='all';
 const CHAINS=['all','sol','bsc','base','eth','robinhood','arc','stable'];
 const STAGES=['all','NEW','ACCUMULATION','TRENDING','BREAKOUT','RETEST','EXTENDED','DECAY','WATCH'];
