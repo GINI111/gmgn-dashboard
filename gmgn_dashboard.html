@@ -165,7 +165,7 @@ function stats(){
 
 function cols(){
   return [
-    ['s','币种'],['c','链'],['st','阶段'],['sig','信号'],['sc','评分'],['er','追高'],
+    ['ch','图表'],['s','币种'],['c','链'],['st','阶段'],['sig','信号'],['sc','评分'],['er','追高'],
     ['narr','题材'],['mc','市值'],['p1h','24h'],['sm','聪明钱'],['hd','持有人'],
     ['ls','活跃'],['ct','币龄'],
   ];
@@ -203,6 +203,7 @@ function render(){
     const stale=ageH>24?'stale':ageH>6?'old':'';
     const warn=ageH>6?`<span title="数据 ${ageH.toFixed(0)}小时前更新，可能已过期">⚠️</span>`:'';
     return `<tr class="${stale}" onclick="showD('${t.c}:${t.a}')">
+      <td><a href="https://gmgn.ai/${t.c}/token/${t.a}" target="_blank" onclick="event.stopPropagation()" title="GMGN 打开图表" style="text-decoration:none">📈</a></td>
       <td><b>${t.s}</b> ${warn}</td>
       <td style="color:var(--dim)">${chainShort(t.c)}</td>
       <td><span class="stg ${t.st}">${STG_CN[t.st]||t.st}</span></td>
@@ -218,7 +219,7 @@ function render(){
       <td style="color:var(--dim)">${t.age>86400?(t.age/3600).toFixed(0)+'小时前':(t.age/60).toFixed(0)+'分前'}</td>
       <td style="color:var(--dim)">${ageFmt(t.ct)}</td>
     </tr>`;
-  }).join('')||'<tr><td colspan="12" class="empty">无匹配币种</td></tr>';
+  }).join('')||'<tr><td colspan="13" class="empty">无匹配币种</td></tr>';
 }
 function setSort(k){if(SORT.k===k)SORT.d*=-1;else{SORT.k=k;SORT.d=-1}render()}
 
@@ -277,7 +278,7 @@ function showD(key){
   ];
   $('dlg').innerHTML=`
     <span class="x" onclick="closeD()">✕</span>
-    <h2>${t.s} <span style="color:var(--dim);font-size:12px">${t.n||''}</span></h2>
+    <h2>${t.s} <span style="color:var(--dim);font-size:12px">${t.n||''}</span> <a href="https://gmgn.ai/${t.c}/token/${t.a}" target="_blank" style="font-size:12px;color:var(--cyn);text-decoration:none">📈 图表</a></h2>
     <div class="cls">${t.c} · ${t.a.slice(0,10)}...${t.a.slice(-6)}</div>
     ${ageWarn}
     <div class="grid2">${rows.map(([k,v])=>`<div class="row"><span class="k">${k}</span><span>${v}</span></div>`).join('')}</div>
@@ -312,14 +313,14 @@ async function load(){
     const r=await fetch(DATA_URL+'?t='+Date.now());
     D=await r.json();
     const ageMin = Math.max(0, Math.round((Date.now()/1000 - D.generated_at)/60));
-    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每5分钟自动同步`;
+    $('sub').textContent=`⏱️ 数据时间 ${D.generated_str}（北京时间） · ${ageMin}分钟前更新 · 每60秒自动刷新 · 📈列点击打开GMGN图表`;
     stats();render();renderEv();initFilters();
     $('status').textContent='✅ 已更新';
   }catch(e){$('status').textContent='❌ 加载失败: '+e.message}
 }
 initFilters();
 load();
-setInterval(load, 5*60*1000);
+setInterval(load, 60*1000);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
 </script>
 </body>
